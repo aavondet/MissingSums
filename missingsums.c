@@ -3,12 +3,14 @@
 #include <math.h>
 #include <stdio.h>
 #include "bitvector.h"
+#include "xalloc.h"
 
 // Returns number between 0 and 1 inclusive
 double rand_param() {
     return ((double)rand() / (double)RAND_MAX);
 }
 
+// Counts number of 0's until n from a bitvector
 // Param: characteristic vectore of B
 // Returns: cardinality of missing sums of B
 int count_missing(bitvector B, uint8_t n) {
@@ -21,11 +23,11 @@ int count_missing(bitvector B, uint8_t n) {
 
 // Generate subset of [0, 1, ... , n]
 // Probability of an element being contained is p
-// Param: probability p, number of elements n
+// Param: probability p, upper bound n (inclusive)
 // Returns: characteristic vector of subset
 bitvector gen_set(double p, index n) {
     bitvector new = bitvector_new();
-    for (index i = 0; i < n; i++) {
+    for (index i = 0; i <= n; i++) {
         if (rand_param() < p) {
             new = bitvector_flip(new, i);
         }
@@ -37,12 +39,12 @@ bitvector gen_set(double p, index n) {
 // Compute Sumset
 // Param: characteristic vectore of B
 // Returns: characterictic vector of B+B
-bitvector sumset(bitvector A, bitvector B) {
+bitvector sumset(bitvector A, uint8_t a, bitvector B, uint8_t b) {
     bitvector sum = bitvector_new();
     bitvector check = bitvector_new();
-    for (index i = 0; i < BITVECTOR_LIMIT/2; i++) {
+    for (index i = 0; i <= a; i++) {
         if (bitvector_get(A, i)) {
-            for (index j = 0; j < BITVECTOR_LIMIT/2; j++) {
+            for (index j = 0; j <= b; j++) {
                 if (bitvector_get(B, j) && !bitvector_get(check, i + j)) {
                     sum = bitvector_flip(sum, i + j);
                     check = bitvector_flip(check, i + j);
@@ -50,30 +52,45 @@ bitvector sumset(bitvector A, bitvector B) {
             }
         }
     }
-    return B;
-}
-
-// Compute Sumset of a Sumset
-// Param: characteristic vector of B
-// Returns: characteristic vector of B+B+B+B
-bitvector sumset_of_sumset(bitvector B) {
-    bitvector sum = sumset(B, B);
-    return sumset(sum, sum);
+    return sum;
 }
 
 // Simulate
-
-//int[] simulate(bitvector B, uint8_t k) {
-    
-//}
+//
+// Param: k where we are computing A^(k),
+//        n is the upper bound of original set [0, 1, ..., n]
+//        sample is the number of sumsets to compute,
+//        p is the probability an element is in a subset
+// Returns: Array with i-th index containing
+//          number of sumsets missing i sums
+char *simulate(uint8_t k, uint8_t n, size_t sample,
+               double p) {
+    char *missing = {0};
+    for (size_t i = 0; i < sample; i++) {
+        bitvector temp = gen_set(p, n);
+        for (uint8_t j = 0; j < k; j++) {
+            temp = sumset(temp, n, temp, n);
+        }
+        index miss = count_missing(temp, n * k);
+        missing[miss] += 1;
+    }
+    return missing;
+}
 
 
 int main() {
-    bitvector n = gen_set(0.5, 20);
-    for (index i = 0; i < 5; i++) {
+    // testing
+    bitvector n = gen_set(0.5, 5);
+    for (index i = 0; i <= 5; i++) {
         bool b = bitvector_get(n, i);
         fprintf(stdout, "%d\n", b);
     }
     fprintf(stdout, "%d\n", count_missing(n, 5));
+    n = sumset(n, 5, n, 5);
+    for (index i = 0; i <= 10; i++) {
+        bool b = bitvector_get(n, i);
+        fprintf(stdout, "%d\n", b);
+    }
+    fprintf(stdout, "%d\n", count_missing(n,10));
     return 0;
 }
