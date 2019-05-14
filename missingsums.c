@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdio.h>
-#include "bitvector.h"
-#include "xalloc.h"
+#include "lib/bitvector.h"
+#include "lib/xalloc.h"
 
 // Returns number between 0 and 1 inclusive
 double rand_param() {
@@ -79,18 +79,22 @@ char *simulate(uint8_t k, uint8_t n, size_t sample,
 
 
 int main() {
-    // testing
-    bitvector n = gen_set(0.5, 5);
-    for (index i = 0; i <= 5; i++) {
-        bool b = bitvector_get(n, i);
-        fprintf(stdout, "%d\n", b);
-    }
-    fprintf(stdout, "%d\n", count_missing(n, 5));
-    n = sumset(n, 5, n, 5);
-    for (index i = 0; i <= 10; i++) {
-        bool b = bitvector_get(n, i);
-        fprintf(stdout, "%d\n", b);
-    }
-    fprintf(stdout, "%d\n", count_missing(n,10));
+    //testing
+//    bitvector n = gen_set(0.5, 5);
+//    for (index i = 0; i <= 5; i++) {
+//        bool b = bitvector_get(n, i);
+//        fprintf(stdout, "%d\n", b);
+//    }
+//    fprintf(stdout, "%d\n", count_missing(n, 5));
+//    n = sumset(n, 5, n, 5);
+//    for (index i = 0; i <= 10; i++) {
+//        bool b = bitvector_get(n, i);
+//        fprintf(stdout, "%d\n", b);
+//    }
+//    fprintf(stdout, "%d\n", count_missing(n,10));
+    
+    //small cases
+    bitvector n = bitvector_new();
+    
     return 0;
 }
